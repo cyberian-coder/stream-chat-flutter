@@ -19,7 +19,7 @@ class FullScreenImage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: IconThemeData(
-          color: Colors.white,
+          color: Theme.of(context).appBarTheme.iconTheme.color,
         ),
       ),
       body: PhotoView(

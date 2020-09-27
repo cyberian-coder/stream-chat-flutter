@@ -29,7 +29,7 @@ class _FullScreenVideoState extends State<FullScreenVideo> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: IconThemeData(
-          color: Colors.white,
+          color: Theme.of(context).appBarTheme.iconTheme.color,
         ),
       ),
       body: Builder(
