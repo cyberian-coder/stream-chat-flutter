@@ -13,6 +13,7 @@ import 'package:stream_chat/stream_chat.dart';
 import 'package:stream_chat_flutter/src/message_list_view.dart';
 import 'package:stream_chat_flutter/src/stream_chat_theme.dart';
 import 'package:stream_chat_flutter/src/user_avatar.dart';
+import 'package:video_compress/video_compress.dart';
 
 import '../stream_chat_flutter.dart';
 import 'stream_channel.dart';
@@ -680,14 +681,15 @@ class MessageInputState extends State<MessageInput> {
                   Navigator.pop(context);
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.insert_drive_file),
-                title: Text('Upload a file'),
-                onTap: () {
-                  pickFile(DefaultAttachmentTypes.file, false);
-                  Navigator.pop(context);
-                },
-              ),
+              SizedBox(height: 10),
+              // ListTile(
+              //   leading: Icon(Icons.insert_drive_file),
+              //   title: Text('Upload a file'),
+              //   onTap: () {
+              //     pickFile(DefaultAttachmentTypes.file, false);
+              //     Navigator.pop(context);
+              //   },
+              // ),
             ],
           );
         });
@@ -726,22 +728,41 @@ class MessageInputState extends State<MessageInput> {
       PickedFile pickedFile;
       if (fileType == DefaultAttachmentTypes.image) {
         pickedFile = await _imagePicker.getImage(source: ImageSource.camera);
+        file = File(pickedFile.path);
       } else if (fileType == DefaultAttachmentTypes.video) {
         pickedFile = await _imagePicker.getVideo(source: ImageSource.camera);
+        final MediaInfo info = await VideoCompress.compressVideo(
+          pickedFile.path,
+          quality: VideoQuality.MediumQuality,
+          deleteOrigin: false,
+        );
+        file = info.file;
       }
-      file = File(pickedFile.path);
     } else {
       FileType type;
       if (fileType == DefaultAttachmentTypes.image) {
         type = FileType.image;
+        final res = await FilePicker.platform.pickFiles(type: type);
+        if (res?.files?.isNotEmpty == true) {
+          file = File(res.files.first.path);
+        }
       } else if (fileType == DefaultAttachmentTypes.video) {
         type = FileType.video;
+        final res = await FilePicker.platform.pickFiles(type: type);
+        if (res?.files?.isNotEmpty == true) {
+          final MediaInfo info = await VideoCompress.compressVideo(
+            res.files.first.path,
+            quality: VideoQuality.MediumQuality,
+            deleteOrigin: false,
+          );
+          file = info.file;
+        }
       } else if (fileType == DefaultAttachmentTypes.file) {
         type = FileType.any;
-      }
-      final res = await FilePicker.platform.pickFiles(type: type);
-      if (res?.files?.isNotEmpty == true) {
-        file = File(res.files.first.path);
+        final res = await FilePicker.platform.pickFiles(type: type);
+        if (res?.files?.isNotEmpty == true) {
+          file = File(res.files.first.path);
+        }
       }
     }
 
