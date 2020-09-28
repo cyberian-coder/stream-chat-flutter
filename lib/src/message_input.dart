@@ -755,7 +755,26 @@ class MessageInputState extends State<MessageInput> {
             quality: VideoQuality.MediumQuality,
             deleteOrigin: false,
           );
-          file = info.file;
+          info.filesize < 19000000
+              ? file = info.file
+              : AlertDialog(
+                  title: Text('Attachment size exceeds the limit'),
+                  content: ListBody(
+                    children: [
+                      Text('Please limit your video to 3 minutes or less.'),
+                      Text(
+                          'The optimal quality for recorded video is 1080p at 30fps'),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('OK'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
         }
       } else if (fileType == DefaultAttachmentTypes.file) {
         type = FileType.any;
