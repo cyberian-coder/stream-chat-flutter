@@ -761,24 +761,29 @@ class MessageInputState extends State<MessageInput> {
                   barrierDismissible: false,
                   context: context,
                   builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Attachment size exceeds the limit'),
-                      content: ListBody(
-                        children: [
-                          Text('Please limit your video to 3 minutes or less.'),
-                          Text(
-                              'The optimal quality for recorded video is 1080p at 30fps'),
+                    return Container(
+                      width: 200,
+                      height: 200,
+                      child: AlertDialog(
+                        title: Text('Attachment size exceeds the limit'),
+                        content: ListBody(
+                          children: [
+                            Text(
+                                'Please limit your video to 3 minutes or less.'),
+                            Text(
+                                'The optimal quality for recorded video is 1080p at 30fps'),
+                          ],
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              info.isCancel = true;
+                            },
+                          )
                         ],
                       ),
-                      actions: <Widget>[
-                        FlatButton(
-                          child: Text('OK'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            info.isCancel = true;
-                          },
-                        )
-                      ],
                     );
                   });
         }
