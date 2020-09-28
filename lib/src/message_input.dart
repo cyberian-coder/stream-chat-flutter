@@ -731,7 +731,7 @@ class MessageInputState extends State<MessageInput> {
         file = File(pickedFile.path);
       } else if (fileType == DefaultAttachmentTypes.video) {
         pickedFile = await _imagePicker.getVideo(source: ImageSource.camera);
-        final MediaInfo info = await VideoCompress.compressVideo(
+        final info = await VideoCompress.compressVideo(
           pickedFile.path,
           quality: VideoQuality.MediumQuality,
           deleteOrigin: false,
@@ -750,7 +750,7 @@ class MessageInputState extends State<MessageInput> {
         type = FileType.video;
         final res = await FilePicker.platform.pickFiles(type: type);
         if (res?.files?.isNotEmpty == true) {
-          final MediaInfo info = await VideoCompress.compressVideo(
+          final info = await VideoCompress.compressVideo(
             res.files.first.path,
             quality: VideoQuality.MediumQuality,
             deleteOrigin: false,
@@ -898,6 +898,7 @@ class MessageInputState extends State<MessageInput> {
     _commandsOverlay = null;
     _mentionsOverlay?.remove();
     _mentionsOverlay = null;
+    await VideoCompress.deleteAllCache();
 
     final channel = StreamChannel.of(context).channel;
 
