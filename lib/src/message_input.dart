@@ -755,26 +755,32 @@ class MessageInputState extends State<MessageInput> {
             quality: VideoQuality.MediumQuality,
             deleteOrigin: false,
           );
-          info.filesize < 19000000
+          info.filesize < 18000000
               ? file = info.file
-              : AlertDialog(
-                  title: Text('Attachment size exceeds the limit'),
-                  content: ListBody(
-                    children: [
-                      Text('Please limit your video to 3 minutes or less.'),
-                      Text(
-                          'The optimal quality for recorded video is 1080p at 30fps'),
-                    ],
-                  ),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                );
+              : showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Attachment size exceeds the limit'),
+                      content: ListBody(
+                        children: [
+                          Text('Please limit your video to 3 minutes or less.'),
+                          Text(
+                              'The optimal quality for recorded video is 1080p at 30fps'),
+                        ],
+                      ),
+                      actions: <Widget>[
+                        FlatButton(
+                          child: Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            info.isCancel = true;
+                          },
+                        )
+                      ],
+                    );
+                  });
         }
       } else if (fileType == DefaultAttachmentTypes.file) {
         type = FileType.any;
