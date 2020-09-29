@@ -631,8 +631,8 @@ class MessageInputState extends State<MessageInput> {
         clipBehavior: Clip.hardEdge,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(32),
-            topRight: Radius.circular(32),
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
         ),
         context: context,
@@ -643,7 +643,7 @@ class MessageInputState extends State<MessageInput> {
             children: <Widget>[
               ListTile(
                 title: Text(
-                  'Add a file',
+                  'Add a file (20mb max)',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -659,7 +659,7 @@ class MessageInputState extends State<MessageInput> {
               ),
               ListTile(
                 leading: Icon(Icons.video_library),
-                title: Text('Upload a video'),
+                title: Text('Upload a video (3 minutes max)'),
                 onTap: () {
                   pickFile(DefaultAttachmentTypes.video, false);
                   Navigator.pop(context);
@@ -675,7 +675,7 @@ class MessageInputState extends State<MessageInput> {
               ),
               ListTile(
                 leading: Icon(Icons.videocam),
-                title: Text('Video from camera'),
+                title: Text('Video from camera (3 minutes max)'),
                 onTap: () {
                   pickFile(DefaultAttachmentTypes.video, true);
                   Navigator.pop(context);
@@ -734,9 +734,10 @@ class MessageInputState extends State<MessageInput> {
         final info = await VideoCompress.compressVideo(
           pickedFile.path,
           quality: VideoQuality.MediumQuality,
-          deleteOrigin: false,
+          deleteOrigin: true,
         );
-        file = info.file;
+        _buildCompressionProgress;
+        file = _showVideoSizeLimitError(info, file);
       }
     } else {
       FileType type;
@@ -753,39 +754,10 @@ class MessageInputState extends State<MessageInput> {
           final info = await VideoCompress.compressVideo(
             res.files.first.path,
             quality: VideoQuality.MediumQuality,
-            deleteOrigin: false,
+            deleteOrigin: true,
           );
-          info.filesize < 18000000
-              ? file = info.file
-              : showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return Container(
-                      width: 200,
-                      height: 200,
-                      child: AlertDialog(
-                        title: Text('Attachment size exceeds the limit'),
-                        content: ListBody(
-                          children: [
-                            Text(
-                                'Please limit your video to 3 minutes or less.'),
-                            Text(
-                                'The optimal quality for recorded video is 1080p at 30fps'),
-                          ],
-                        ),
-                        actions: <Widget>[
-                          FlatButton(
-                            child: Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              info.isCancel = true;
-                            },
-                          )
-                        ],
-                      ),
-                    );
-                  });
+          _buildCompressionProgress;
+          file = _showVideoSizeLimitError(info, file);
         }
       } else if (fileType == DefaultAttachmentTypes.file) {
         type = FileType.any;
@@ -835,6 +807,53 @@ class MessageInputState extends State<MessageInput> {
     });
   }
 
+  File _showVideoSizeLimitError(MediaInfo info, File file) {
+    info.filesize < 18000000
+        ? file = info.file
+        : showModalBottomSheet(
+            clipBehavior: Clip.hardEdge,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            isScrollControlled: true,
+            context: context,
+            builder: (BuildContext context) {
+              return Wrap(children: [
+                AlertDialog(
+                  title: Text(
+                    'Attachment size exceeds the limit',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                  ),
+                  content: Text(
+                    'Please limit your video to 3 minutes or less. The recommended maximum quality for recorded video is 1080p at 30fps',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.subtitle2,
+                  ),
+                  actions: <Widget>[
+                    Center(
+                      child: FlatButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          VideoCompress.deleteAllCache();
+                          info.isCancel = true;
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ],
+                )
+              ]);
+            });
+    return file;
+  }
+
   Future<String> _uploadAttachment(
     File file,
     DefaultAttachmentTypes type,
@@ -881,6 +900,12 @@ class MessageInputState extends State<MessageInput> {
       ),
     );
     return res.file;
+  }
+
+  Widget _buildCompressionProgress(BuildContext context) {
+    if (VideoCompress.isCompressing) {
+      return CircularProgressIndicator();
+    }
   }
 
   Widget _buildSendButton(BuildContext context) {
