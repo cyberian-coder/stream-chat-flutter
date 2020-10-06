@@ -236,6 +236,7 @@ class MessageInputState extends State<MessageInput> {
         maxHeight: widget.maxHeight,
         child: TextField(
           key: Key('messageInputText'),
+          textCapitalization: TextCapitalization.sentences,
           enabled: _inputEnabled,
           minLines: null,
           maxLines: null,
